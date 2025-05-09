@@ -73,8 +73,11 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
-
-Assets/MPLUSRounded1c-Medium SDF.asset
+Assets/MPLUSRounded1c-Bold SDF.asset.meta
+Assets/MPLUSRounded1c-Bold.ttf
+Assets/MPLUSRounded1c-Bold.ttf.meta
+Assets/MPLUSRounded1c-Medium SDF.asset.meta
+Assets/MPLUSRounded1c-Medium.ttf
+Assets/MPLUSRounded1c-Medium.ttf.meta
 Assets/MPLUSRounded1c-Bold SDF.asset
-Assets/MPLUSRounded1c-Medium SDF.ttf
-Assets/MPLUSRounded1c-Bold SDF.ttf
+Assets/MPLUSRounded1c-Medium SDF.asset
