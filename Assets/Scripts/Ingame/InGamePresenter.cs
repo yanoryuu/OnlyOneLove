@@ -11,6 +11,8 @@ namespace Ingame
         [SerializeField]
         private InGameView view;
         
+        [SerializeField] private ChooseTopicView chooseTopicView;
+        
         [SerializeField]
         private CardPlayPresenter cardPlayPresenter;
         
@@ -28,11 +30,11 @@ namespace Ingame
 
         private void Bind()
         {
-            model.CurrentIngameState.Subscribe(x => InGameManager.Instance.ChangeState(x))
+            InGameManager.Instance.CurrentState.Subscribe(x => InGameManager.Instance.ChangeState(x))
                 .AddTo(this);
             
             view.TurnEndButton.OnClickAsObservable()
-                .Where(_=>model.CurrentIngameState.Value == InGameEnum.GameState.PlayerTurn)
+                .Where(_=>InGameManager.Instance.CurrentState.Value == InGameEnum.GameState.PlayerTurn)
                 .Subscribe(_ =>
                 {
                     //会話終了
@@ -40,11 +42,19 @@ namespace Ingame
                 .AddTo(this);
             
             view.TalkButton.OnClickAsObservable()
-                .Where(_=>model.CurrentIngameState.Value == InGameEnum.GameState.PlayerTurn)
-                .Subscribe(_=>ChangeState(InGameEnum.GameState.Talk))
+                .Where(_=>InGameManager.Instance.CurrentState.Value == InGameEnum.GameState.PlayerTurn)
+                .Subscribe(_=>ChangeState(InGameEnum.GameState.CardEffect))
                 .AddTo(this);
             
             InGameManager.Instance.CurrentTurn.Subscribe(x=>view.SetCurrentTurn(x))
+                .AddTo(this);
+            
+            //話題選択画面表示
+            InGameManager.Instance.CurrentState.Where(x => x == InGameEnum.GameState.ChooseTopic)
+                .Subscribe(_ =>
+                {
+                    chooseTopicView.Show();
+                })
                 .AddTo(this);
         }
 
@@ -57,11 +67,24 @@ namespace Ingame
                     Debug.Log("State: PlayerTurn");
                     // プレイヤーがカードを選ぶフェーズ
                     break;
+                
+                case InGameEnum.GameState.ChooseTopic:
+                    Debug.Log("State: ChooseTopic");
+                    cardPlayPresenter.Model.TalkTopic.Take(1)
+                        .Subscribe(x =>
+                        {
+                            chooseTopicView.Hide();
+                            ChangeState(InGameEnum.GameState.PlayerTurn);
+                        })
+                        .AddTo(this);
+                    break;
+                
                 case InGameEnum.GameState.CardEffect:
                     Debug.Log("State: CardEffect");
                     // カード効果の実行処理
-                    ChangeState(InGameEnum.GameState.PlayerTurn);
+                    ChangeState(InGameEnum.GameState.Talk);
                     break;
+                
                 case InGameEnum.GameState.Talk:
                     Debug.Log("State: Dialogue");
                     ChangeState(InGameEnum.GameState.CheckStatus);
@@ -83,7 +106,6 @@ namespace Ingame
                 case InGameEnum.GameState.Confession:
                     Debug.Log("State: Confession");
                     // 告白フェーズ（選択肢や演出）UniTaskで告白フェーズが終われば
-                    
                     break;
             }
         }

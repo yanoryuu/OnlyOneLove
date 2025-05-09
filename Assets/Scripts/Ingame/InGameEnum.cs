@@ -5,6 +5,7 @@ public class InGameEnum
     public enum GameState
     {
         Default,
+        ChooseTopic,     //会話カードの選択
         PlayerTurn,      // プレイヤーのターン（カード選択/会話）
         CardEffect,      // カード効果の発動処理
         Talk,        // 会話シーン（カード効果 or イベント）

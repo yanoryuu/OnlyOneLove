@@ -32,8 +32,11 @@ MonoBehaviour:
     trust: 0
     jealousy: 0
     closeness: 0
-    secret: 0
-    charm: 0
+  affectionMultiplier: 0
+  trustMultiplier: 0
+  jealousyMultiplier: 0
+  closenessMultiplier: 0
+  aiDescription: 
   references:
     version: 2
     RefIds: []

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -31,10 +33,23 @@ public abstract class CardBase : MonoBehaviour
             additionalEffect.PlayCard(presenter);
         }
     }
+    
+    /// <summary>
+    /// AI送信用の効果説明とパラメーター変化を返します。
+    /// </summary>
+    /// <returns>CardEffectEntry</returns>
+    public virtual CardEffectEntry GetEffectForAI()
+    {
+        return new CardEffectEntry
+        {
+            description = CardData.aiDescription,
+            effect = CardData.addParameterNum
+        };
+    }
 
     public virtual void ShowCard() => gameObject.SetActive(true);
     public virtual void HideCard() => gameObject.SetActive(false);
 
-    public abstract void PlayCard(CardPlayPresenter presenter);
+    public abstract AngelParameter PlayCard(CardPlayPresenter presenter ,AngelParameter aiOfAngelParameter);
     
 }

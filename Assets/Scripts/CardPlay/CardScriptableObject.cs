@@ -27,8 +27,10 @@ public class CardScriptableObject : ScriptableObject
     //プレイに必要な最低限のプレイヤーのパラメーター
     public PlayerParameter requirmentPlayerParameter = new PlayerParameter();
     
+    //カードタイプ
     public  cardTypes cardType;
     
+    //カードのスプライト
     public  Sprite cardSprite;
     
     /// <summary>
@@ -48,16 +50,27 @@ public class CardScriptableObject : ScriptableObject
     public int addAP = 2; 
     
     //効果を与えるターゲットパラメーター
-    public Parameters addParameterNum;
+    public AngelParameter addParameterNum = new AngelParameter();
+    
+    //効果の倍率
+    public float affectionMultiplier;
+    public float trustMultiplier;
+    public float jealousyMultiplier;
+    public float closenessMultiplier;
     
     [Serializable]
     public enum cardTypes
     {
-        Talk,     // パラメータ上昇（弱・強）を包括
+        Topic,     // パラメータ上昇（弱・強）を包括
         Comment,
         Action,
         Psychic,
         Special,
         Confession
     }
+    /// <summary>
+    /// AIに送るための説明文（自然言語で）
+    /// </summary>
+    [TextArea]
+    public string aiDescription;
 }

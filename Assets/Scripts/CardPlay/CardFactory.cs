@@ -3,13 +3,22 @@ using UnityEngine;
 public class CardFactory : MonoBehaviour
 {
     [Header("Card Prefabs")]
-    [SerializeField] private ParameterAddCard parameterChangeCardPrefab;
-    [SerializeField] private CostBypassCard costBypassCardPrefab;
+    [SerializeField] private ActionCard actionPrefab;
+    [SerializeField] private CommentCard commentCardPrefab;
+    [SerializeField] private SpecialCard specialCardPrefab;
+    [SerializeField] private TopicCard topicCardPrefab;
+    [SerializeField] private ConffesionCard conffesionCardPrefab;
+    [SerializeField] private PsychicCard psychicCardPrefab;
     public CardBase CreateCard(CardScriptableObject date, Transform parent)
     {
         CardBase prefab = date.cardType switch
         {
-            CardScriptableObject.cardTypes.Talk => parameterChangeCardPrefab,
+            CardScriptableObject.cardTypes.Topic => topicCardPrefab,
+            CardScriptableObject.cardTypes.Confession => conffesionCardPrefab,
+            CardScriptableObject.cardTypes.Special => specialCardPrefab,
+            CardScriptableObject.cardTypes.Psychic => psychicCardPrefab,
+            CardScriptableObject.cardTypes.Action => actionPrefab,
+            CardScriptableObject.cardTypes.Comment => commentCardPrefab,
             _ => null
         };
 

@@ -22,6 +22,8 @@ public class CardScriptableObjectEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("playActionPoints"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("cardSprite"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("cardType"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("aiDescription"));
+        
 
         var useReqProp = serializedObject.FindProperty("useRequirmentPlayerParameter");
         EditorGUILayout.PropertyField(useReqProp);
@@ -84,14 +86,18 @@ public class CardScriptableObjectEditor : Editor
 
         switch (cardType)
         {
-            case CardScriptableObject.cardTypes.Talk:
+            case CardScriptableObject.cardTypes.Topic:
                 break;
             case CardScriptableObject.cardTypes.Comment:
                 break;
             case CardScriptableObject.cardTypes.Action:
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("addParameterNum"));
                 break;
             case CardScriptableObject.cardTypes.Psychic:
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("addParameterNum"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("affectionMultiplier"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("trustMultiplier"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("jealousyMultiplier"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("closenessMultiplier"));
                 break;
             case CardScriptableObject.cardTypes.Special:
                 break;
@@ -101,4 +107,6 @@ public class CardScriptableObjectEditor : Editor
 
         serializedObject.ApplyModifiedProperties();
     }
+    
+    
 }

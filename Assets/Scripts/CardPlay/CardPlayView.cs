@@ -22,6 +22,9 @@ public class CardPlayView : MonoBehaviour
 
     [SerializeField] private TextMeshProUGUI restCardsText;
     
+    [SerializeField] private  InputField talkInputField;
+    public InputField TalkInputField => talkInputField;
+    
     public void AddCard(CardBase card)
     {
         card.ShowCard();

@@ -19,8 +19,13 @@ public class AngelPresenter : MonoBehaviour
    }
 
    //次のParameterをここに入力
-   public void UpdateAngel(Parameters parameters)
+   public void UpdateAngel(AngelParameter parameters)
    {
       angelModel.UpdateParameter(parameters);
+   }
+
+   public AngelParameter GetAngelParameter()
+   {
+      return angelModel.AngelParameter;
    }
 }

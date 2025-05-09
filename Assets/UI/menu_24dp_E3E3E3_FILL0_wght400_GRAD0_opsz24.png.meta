@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      menu_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24_0: -8877324488539637058
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

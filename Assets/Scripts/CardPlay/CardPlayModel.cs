@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 using R3;
 using UnityEngine;
@@ -8,6 +7,10 @@ using UnityEngine;
 /// </summary>
 public class CardPlayModel
 {
+    //現在の保持会話カード
+    private ReactiveProperty<List<CardBase>> holdTalkCard;
+    public ReactiveProperty<List<CardBase>> HoldCard => holdTalkCard;
+    
     // 現在の保持カード
     private ReactiveProperty<List<CardBase>> currentHoldCard;
     public ReactiveProperty<List<CardBase>> CurrentHoldCard => currentHoldCard;
@@ -16,8 +19,10 @@ public class CardPlayModel
     private ReactiveProperty<int> currentHoldCardIndex;
     public ReactiveProperty<int> CurrentHoldCardIndex => currentHoldCardIndex;
     
+    //　会話カード
+    
     // 最大カード保持数
-    private int maxHoldCards; // 初期値を仮で5に設定（必要なら外から設定可能にしてもOK）
+    private int maxHoldCards; 
     public int MaxHoldCards => maxHoldCards;
     
     // 墓地カード
@@ -31,6 +36,9 @@ public class CardPlayModel
     // プレイヤーのステータス（ReactiveProperty使用）
     private PlayerParameterRuntime playerParameter;
     public PlayerParameterRuntime PlayerParameter => playerParameter;
+
+    private ReactiveProperty<CardBase> talkTopic;
+    public ReactiveProperty<CardBase> TalkTopic => talkTopic;
     
     // コンストラクタ
     public CardPlayModel()
@@ -44,7 +52,7 @@ public class CardPlayModel
         playedCards = new List<CardBase>();
         onAddCard = new Subject<CardBase>();
         
-            
+        
         playerParameter.ActionPoint.Value = 3; // 初期AP設定
         maxHoldCards = CardPlayConst.maxHoldCardNum;
     }
@@ -72,9 +80,8 @@ public class CardPlayModel
     }
 
     // カードプレイ時の処理
-    public void PlayCard(CardBase card, int playActionPoints)
+    public void PlayCard(CardBase card)
     {
-        playerParameter.ActionPoint.Value -= playActionPoints;
         playedCards.Add(card);
     }
 
@@ -89,5 +96,10 @@ public class CardPlayModel
     {
         Debug.Log("Initialize");
         playerParameter.ActionPoint.Value = 3;
+    }
+
+    public void SetTalkTopic(CardBase TopicCard)
+    {
+        talkTopic.Value = TopicCard;
     }
 }
