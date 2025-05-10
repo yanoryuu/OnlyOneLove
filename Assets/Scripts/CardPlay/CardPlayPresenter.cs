@@ -11,7 +11,7 @@ public class CardPlayPresenter : MonoBehaviour
     private CardPlayModel model;
     public CardPlayModel Model => model;
     
-    [SerializeField] private CardPlayView view;
+    [SerializeField] private CardPlayView cardPlayView;
     
     [SerializeField] private ChooseTopicView chooseTopicView;
     
@@ -67,7 +67,7 @@ public class CardPlayPresenter : MonoBehaviour
             .Subscribe(cardData =>
             {
                 cardData.cardButton.OnClickAsObservable()
-                    .Where(_ => InGameManager.Instance.CurrentState.Value == InGameEnum.GameState.PlayerTurn)
+                    .Where(_ => InGameManager.Instance.CurrentState.Value == InGameEnum.GameState.PlayerTurn || InGameManager.Instance.CurrentState.Value == InGameEnum.GameState.ChooseTopic)
                     .Subscribe(x =>
                     {
                         Debug.Log($"Select {x.ToString()}");
@@ -76,13 +76,13 @@ public class CardPlayPresenter : MonoBehaviour
                     .AddTo(cardData);
 
                 // ビューに追加
-                view.AddCard(cardData);
+                cardPlayView.AddCard(cardData);
                 Debug.Log($"{cardData}のカードを追加しました。");
             })
             .AddTo(this);
 
         //会話パート終了
-        view.SetButton.OnClickAsObservable()
+        cardPlayView.SetButton.OnClickAsObservable()
             .Subscribe(_ =>
             {
                 if (currentSelectedCard != null)
@@ -92,8 +92,8 @@ public class CardPlayPresenter : MonoBehaviour
             })
             .AddTo(this);
         
-        //会話送信ボタン
-        view.TalkButton.OnClickAsObservable()
+        // 会話送信ボタン
+        cardPlayView.TalkButton.OnClickAsObservable()
             .Subscribe(_ =>
             {
                 // a. 現在パラを取得
@@ -107,11 +107,12 @@ public class CardPlayPresenter : MonoBehaviour
                     tmp = card.PlayCard(this, tmp);
                     cardDeltas.Add(card.GetEffectForAI());
                     oneTurnUsedCards.Add(card);
+                    RemoveCard(card);
                 }
 
                 // c. JSONを組み立てて送信
                 string json = AIPromptBuilder.BuildPromptJson(
-                    view.TalkInputField.text,
+                    cardPlayView.TalkInputField.text,
                     before,
                     cardDeltas
                 );
@@ -122,6 +123,7 @@ public class CardPlayPresenter : MonoBehaviour
                 oneTurnUsedCards.Clear();
             })
             .AddTo(this);
+
         
         InGameManager.Instance.CurrentState.Where(x => x == InGameEnum.GameState.PlayerTurn)
             .Subscribe(_=>
@@ -130,9 +132,6 @@ public class CardPlayPresenter : MonoBehaviour
                 //選択中のカードを初期化
                 currentSelectedCard = null;
             })
-            .AddTo(this);
-        
-        model.CurrentHoldCardIndex.Subscribe(x=>view.SetRestCards(x))
             .AddTo(this);
         
         chooseTopicView.SetTopicButton.OnClickAsObservable()
@@ -152,7 +151,7 @@ public class CardPlayPresenter : MonoBehaviour
     
 
     //カード使用時の演出
-    private AngelParameter PlayCard(CardBase card,AngelParameter aiOfAngelParameter)
+    /*private AngelParameter PlayCard(CardBase card,AngelParameter aiOfAngelParameter)
     {
         Debug.Log($"使用：{card}");
         
@@ -160,7 +159,7 @@ public class CardPlayPresenter : MonoBehaviour
         model.PlayCard(card);
         
         //見た目
-        view.PlayCard(card);
+        cardPlayView.PlayCard(card);
         
         //実際の効果
         var parameter = card.PlayCard(this, aiOfAngelParameter);
@@ -172,7 +171,7 @@ public class CardPlayPresenter : MonoBehaviour
         RemoveCard(card);
 
         return parameter;
-    }
+    }*/
     
     /// <summary>
     /// AI からの返答（JSON）を受け取り、パラメーターを更新して UI に表示します
@@ -234,7 +233,29 @@ public class CardPlayPresenter : MonoBehaviour
     //会話内容とカード内容の送信
     private void SendToAITalk(string Json)
     {
-        localAIClient.SendToLocalAI(Json, OnAIResponse);
+        // localAIClient.SendToLocalAI(Json, OnAIResponse);
+        
+        Debug.Log("AI送信は未実装。代わりにダミーの返答を表示します。");
+
+        // 仮の感情変化（小さな変化）
+        AngelParameter dummyDelta = new AngelParameter
+        {
+            affection = 2f,
+            trust = 1f,
+            jealousy = 0f,
+            closeness = 1f
+        };
+
+        // 仮のAIテキスト返答
+        AIResponseData dummyResponse = new AIResponseData
+        {
+            reply = "うん、なんだか嬉しいかも。ありがとう。",
+            deltaParameter = dummyDelta
+        };
+
+        // JSON形式にして再利用（本来のAI応答と同じ処理で動くように）
+        string fakeJson = JsonUtility.ToJson(dummyResponse);
+        OnAIResponse(fakeJson);
     }
 
     //使用予定カードに入れる
@@ -269,22 +290,23 @@ public class CardPlayPresenter : MonoBehaviour
     //カード追加時の演出
     public void AddCard(CardScriptableObject cardDate)
     {
-        var card = cardFactory.CreateCard(cardDate, view.CardParent);
+        var card = cardFactory.CreateCard(cardDate, cardPlayView.CardParent);
         
         //カード生成用
         model.AddCard(card);
         
-        view.ConfigCard(model.CurrentHoldCard.Value);
+        cardPlayView.ConfigCard(model.CurrentHoldCard.Value);
     }
     
     //カード削除
     public void RemoveCard(CardBase cardDate)
     {
+        Debug.Log($"削除{cardDate}");
         model.RemoveCard(cardDate);
         
-        view.RemoveCard(cardDate);
+        cardPlayView.RemoveCard(cardDate);
         
-        view.ConfigCard(model.CurrentHoldCard.Value);
+        cardPlayView.ConfigCard(model.CurrentHoldCard.Value);
     }
     
     //ランダムでチョイス

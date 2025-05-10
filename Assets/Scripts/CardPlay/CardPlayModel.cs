@@ -51,6 +51,7 @@ public class CardPlayModel
         currentHoldCardIndex = new ReactiveProperty<int>(0);
         playedCards = new List<CardBase>();
         onAddCard = new Subject<CardBase>();
+        talkTopic = new ReactiveProperty<CardBase>();
         
         
         playerParameter.ActionPoint.Value = 3; // 初期AP設定

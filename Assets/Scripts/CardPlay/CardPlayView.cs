@@ -5,6 +5,9 @@ using TMPro;
 
 public class CardPlayView : MonoBehaviour
 {
+    [SerializeField] private GameObject objCardPlayView;
+    public GameObject ObjCardPlayView => objCardPlayView;
+    
     [SerializeField] private GameObject cardParent;
     public Transform CardParent => cardParent.transform;
     
@@ -19,11 +22,9 @@ public class CardPlayView : MonoBehaviour
     
     public void ShowCard() => cardParent.SetActive(true);
     public void HideCard() => cardParent.SetActive(false);
-
-    [SerializeField] private TextMeshProUGUI restCardsText;
     
-    [SerializeField] private  InputField talkInputField;
-    public InputField TalkInputField => talkInputField;
+    [SerializeField] private  TMP_InputField talkInputField;
+    public TMP_InputField TalkInputField => talkInputField;
     
     public void AddCard(CardBase card)
     {
@@ -59,8 +60,13 @@ public class CardPlayView : MonoBehaviour
         }
     }
     
-    public void SetRestCards(int restCards)
+    public void Show()
     {
-        restCardsText.text = $"RestCards: {restCards}";
+        objCardPlayView.SetActive(true);
+    }
+    
+    public void Hide()
+    {
+        objCardPlayView.SetActive(false);
     }
 }

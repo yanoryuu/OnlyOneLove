@@ -21,7 +21,7 @@ MonoBehaviour:
     Charm: 0
     Strength: 0
     ActionPoint: 0
-  cardType: 3
+  cardType: 0
   cardSprite: {fileID: -1233334858102731710, guid: 5ddc44643aaf5d74680ce6d44c235971, type: 3}
   affectionUpNum: 1
   keepTurns: 1
@@ -32,8 +32,11 @@ MonoBehaviour:
     trust: 0
     jealousy: 0
     closeness: 0
-    secret: 0
-    charm: 5
+  affectionMultiplier: 0
+  trustMultiplier: 0
+  jealousyMultiplier: 0
+  closenessMultiplier: 0
+  aiDescription: 
   references:
     version: 2
     RefIds: []

@@ -12,5 +12,6 @@ public class InGameEnum
         FinishTurn,      // ターンの終了
         CheckStatus,     // 状態更新（好感度・SP等）
         Confession,      // 告白フェーズ
+        FinishTalk
     }
 }
