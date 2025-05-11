@@ -10,14 +10,14 @@ public class CardPlayView : MonoBehaviour
     
     [SerializeField] private GameObject cardParent;
     public Transform CardParent => cardParent.transform;
-    
-    [SerializeField] private Button setButton;
-    public Button SetButton => setButton;
+
+    [SerializeField] private GameObject playerInput;
+    public GameObject PlayerInput => playerInput;
     
     [SerializeField] private Button talkButton;
     public Button TalkButton => talkButton;
 
-    //カードの感覚
+    //カードの間隔
     [SerializeField] private float spacing = 150f;
     
     public void ShowCard() => cardParent.SetActive(true);
@@ -25,6 +25,10 @@ public class CardPlayView : MonoBehaviour
     
     [SerializeField] private  TMP_InputField talkInputField;
     public TMP_InputField TalkInputField => talkInputField;
+    
+    [SerializeField] private Transform setCardArea;
+    public Transform SetCardArea => setCardArea;
+
     
     public void AddCard(CardBase card)
     {
@@ -49,14 +53,28 @@ public class CardPlayView : MonoBehaviour
 
     public void ConfigCard(List<CardBase> cards)
     {
-        // 親オブジェクトの中心からカードを並べるイメージ
-        float startX = -(cards.Count - 1) * spacing * 0.5f; // 最初のカードのX位置
+        if (cards == null || cards.Count == 0) return;
+
+        float startY = -(cards.Count - 1) * spacing * 0.5f;
 
         for (int i = 0; i < cards.Count; i++)
         {
             var card = cards[i];
-            card.transform.localPosition = new Vector3(startX + i * spacing, 0, 0); // 横に並べる
-            card.transform.localRotation = Quaternion.identity; // 回転リセット（必要なら）
+            card.transform.localPosition = new Vector3(0, startY + i * spacing, 0);
+            card.transform.localRotation = Quaternion.identity;
+        }
+    }
+
+
+    public void ConfigSetCard(List<CardBase> cards)
+    {
+        float startX = -(cards.Count - 1) * spacing * 0.5f;
+        
+        for (int i = 0; i < cards.Count; i++)
+        {
+            var card = cards[i];
+            card.transform.localPosition = new Vector3(startX + i * spacing, 0, 0);
+            card.transform.localRotation = Quaternion.identity;
         }
     }
     

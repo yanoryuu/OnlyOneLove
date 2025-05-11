@@ -7,10 +7,6 @@ using UnityEngine;
 /// </summary>
 public class CardPlayModel
 {
-    //現在の保持会話カード
-    private ReactiveProperty<List<CardBase>> holdTalkCard;
-    public ReactiveProperty<List<CardBase>> HoldCard => holdTalkCard;
-    
     // 現在の保持カード
     private ReactiveProperty<List<CardBase>> currentHoldCard;
     public ReactiveProperty<List<CardBase>> CurrentHoldCard => currentHoldCard;
@@ -19,11 +15,21 @@ public class CardPlayModel
     private ReactiveProperty<int> currentHoldCardIndex;
     public ReactiveProperty<int> CurrentHoldCardIndex => currentHoldCardIndex;
     
-    //　会話カード
-    
     // 最大カード保持数
     private int maxHoldCards; 
     public int MaxHoldCards => maxHoldCards;
+    
+    //現在の会話カード
+    private ReactiveProperty<List<CardBase>> currentHoldTopicCard;
+    public ReactiveProperty<List<CardBase>> CurrentHoldTopicCard => currentHoldTopicCard;
+    
+    //会話カード保持数
+    private ReactiveProperty<int> currentHoldTopicCardIndex;
+    public ReactiveProperty<int> CurrentHoldTopicCardIndex => currentHoldTopicCardIndex;
+    
+    //会話カードの最大保持数
+    private int maxTopicCards;
+    public int MaxTopicCards => maxTopicCards;
     
     // 墓地カード
     private List<CardBase> playedCards;
@@ -32,6 +38,9 @@ public class CardPlayModel
     // 新しく追加されたカードを通知する
     private Subject<CardBase> onAddCard;
     public Observable<CardBase> OnAddCard => onAddCard;
+    
+    private Subject<CardBase> onAddTopicCard;
+    public Observable<CardBase> OnAddTopicCard => onAddTopicCard;
     
     // プレイヤーのステータス（ReactiveProperty使用）
     private PlayerParameterRuntime playerParameter;
@@ -47,20 +56,30 @@ public class CardPlayModel
         playerParameter = new PlayerParameterRuntime();
 
         // 保持カード、インデックスなどの初期化
+        currentHoldTopicCard = new ReactiveProperty<List<CardBase>>(new List<CardBase>());
+        currentHoldTopicCardIndex = new ReactiveProperty<int>();
         currentHoldCard = new ReactiveProperty<List<CardBase>>(new List<CardBase>());
         currentHoldCardIndex = new ReactiveProperty<int>(0);
         playedCards = new List<CardBase>();
         onAddCard = new Subject<CardBase>();
+        onAddTopicCard = new Subject<CardBase>();
         talkTopic = new ReactiveProperty<CardBase>();
         
         
         playerParameter.ActionPoint.Value = 3; // 初期AP設定
         maxHoldCards = CardPlayConst.maxHoldCardNum;
+        maxTopicCards = CardPlayConst.maxHoldTopicCard;
     }
 
     // カードを追加
     public void AddCard(CardBase card)
     {
+        if (card.CardData.cardType == CardScriptableObject.cardTypes.Topic)
+        {
+            Debug.Log("会話カードはAddTopicを使ってください");
+            return;
+        }
+        
         if (currentHoldCard.Value.Count >= maxHoldCards)
         {
             // 最大手札数に達していたら追加しない
@@ -71,6 +90,25 @@ public class CardPlayModel
         currentHoldCardIndex.Value++;
         currentHoldCard.Value.Add(card);
         onAddCard.OnNext(card);
+    }
+
+    public void AddTopic(CardBase card)
+    {
+        if (card.CardData.cardType != CardScriptableObject.cardTypes.Topic)
+        {
+            Debug.Log("会話カードではないです");
+            return;
+        }
+        if (currentHoldTopicCard.Value.Count >= maxHoldCards)
+        {
+            // 最大手札数に達していたら追加しない
+            Debug.LogWarning($"カードを追加できません。最大保持数({maxHoldCards})に達しています。");
+            return;
+        }
+
+        currentHoldTopicCardIndex.Value++;
+        currentHoldTopicCard.Value.Add(card);
+        onAddTopicCard.OnNext(card);
     }
 
     // カードを削除
@@ -102,5 +140,13 @@ public class CardPlayModel
     public void SetTalkTopic(CardBase TopicCard)
     {
         talkTopic.Value = TopicCard;
+    }
+
+    public CardBase ResetTalkTopic()
+    {
+        var lastTopic = talkTopic.Value;
+        
+        talkTopic.Value = null;
+        return lastTopic;
     }
 }

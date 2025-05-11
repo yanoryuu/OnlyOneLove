@@ -43,9 +43,12 @@ public class CardPlayPresenter : MonoBehaviour
     
     //ゲーム開始時のドロープール
     [SerializeField] private List<CardScriptableObject.cardTypes> startCardPool = new List<CardScriptableObject.cardTypes>();
-
+    
+    [SerializeField] private List<CardScriptableObject.cardTypes> startTopicCardPool = new List<CardScriptableObject.cardTypes>();
     //ゲーム開始時にカードを引く枚数
     [SerializeField] private int startGetCardNum = 5;
+    
+    [SerializeField] private int startGetTopicCardNum = 2;
     
     private List<CardBase> oneTurnUsedCards = new List<CardBase>();
 
@@ -59,6 +62,8 @@ public class CardPlayPresenter : MonoBehaviour
         
         //ゲーム開始時のドロー
         StartDrawCards(startCardPool,startGetCardNum);
+        
+        DrawTopicCards(startTopicCardPool, startGetTopicCardNum);
     }
 
     private void Bind()
@@ -71,7 +76,7 @@ public class CardPlayPresenter : MonoBehaviour
                     .Subscribe(x =>
                     {
                         Debug.Log($"Select {x.ToString()}");
-                        currentSelectedCard = cardData;
+                        OnCardClicked(cardData);
                     })
                     .AddTo(cardData);
 
@@ -80,15 +85,22 @@ public class CardPlayPresenter : MonoBehaviour
                 Debug.Log($"{cardData}のカードを追加しました。");
             })
             .AddTo(this);
-
-        //会話パート終了
-        cardPlayView.SetButton.OnClickAsObservable()
-            .Subscribe(_ =>
+        
+        model.OnAddTopicCard
+            .Subscribe(cardData =>
             {
-                if (currentSelectedCard != null)
-                {
-                    SetCard(currentSelectedCard);
-                }
+                cardData.cardButton.OnClickAsObservable()
+                    .Where(_ => InGameManager.Instance.CurrentState.Value == InGameEnum.GameState.PlayerTurn || InGameManager.Instance.CurrentState.Value == InGameEnum.GameState.ChooseTopic)
+                    .Subscribe(x =>
+                    {
+                        Debug.Log($"Select {x.ToString()}");
+                        OnTopicCardClicked(cardData);
+                    })
+                    .AddTo(cardData);
+
+                // ビューに追加
+                chooseTopicView.AddTopicCard(cardData);
+                Debug.Log($"{cardData}のカードを追加しました。");
             })
             .AddTo(this);
         
@@ -135,10 +147,75 @@ public class CardPlayPresenter : MonoBehaviour
             .AddTo(this);
         
         chooseTopicView.SetTopicButton.OnClickAsObservable()
+            .Where(_=>model.TalkTopic!=null)
             .Subscribe(_ => model.SetTalkTopic(currentSelectedCard))
             .AddTo(this);
     }
     
+    public void OnCardClicked(CardBase card)
+    {
+        if (SetCards.Contains(card))
+        {
+            // 再クリックで外す
+            SetCards.Remove(card);
+            card.transform.SetParent(cardPlayView.CardParent); // 元の親に戻す
+            card.transform.localPosition = Vector3.zero;
+            Debug.Log("カードをセットから外しました");
+        }
+        else
+        {
+            if (SetCards.Count >= 3)
+            {
+                Debug.Log("3枚までしかセットできません");
+                return;
+            }
+
+            SetCards.Add(card);
+            card.transform.SetParent(cardPlayView.SetCardArea); // セット枠のUIに移動
+            card.transform.localPosition = Vector3.zero;
+            Debug.Log("カードをセットしました");
+        }
+
+        // 表示更新
+        cardPlayView.ConfigCard(model.CurrentHoldCard.Value);
+        cardPlayView.ConfigSetCard(setCards);
+    }
+
+    public void OnTopicCardClicked(CardBase card)
+    {
+        if (model.TalkTopic == null)
+        {
+            model.SetTalkTopic(card);
+            card.transform.SetParent(chooseTopicView.SetTopicCardParent.transform);
+            card.transform.localPosition = Vector3.zero;
+            chooseTopicView.SetTopicCard(card);
+            
+            Debug.Log("会話カードをセット");
+            
+        }else if (model.TalkTopic.Value == card)
+        {
+            var lastTopic = model.ResetTalkTopic();
+            lastTopic.transform.SetParent(chooseTopicView.TopicCardParent.transform);
+            Debug.Log("会話カードを外した");
+        }
+        else
+        {
+            var lastTopic = model.ResetTalkTopic();
+            lastTopic.transform.SetParent(chooseTopicView.TopicCardParent.transform);
+            model.SetTalkTopic(card);
+            card.transform.SetParent(chooseTopicView.SetTopicCardParent.transform);
+            card.transform.localPosition = Vector3.zero;
+            chooseTopicView.SetTopicCard(card);
+            Debug.Log("会話カード入れ替え");
+        }
+        // 表示更新
+        var topicCards = model.CurrentHoldTopicCard?.Value;
+        if (topicCards != null)
+        {
+            chooseTopicView.ConfigCard(topicCards);
+        }
+
+    }
     public List<CardEffectEntry> CollectUsedCardEffects()
     {
         var list = new List<CardEffectEntry>();
@@ -257,28 +334,6 @@ public class CardPlayPresenter : MonoBehaviour
         string fakeJson = JsonUtility.ToJson(dummyResponse);
         OnAIResponse(fakeJson);
     }
-
-    //使用予定カードに入れる
-    private void SetCard(CardBase card)
-    {
-        foreach (var setcard in setCards)
-        {
-            if (setcard == card)
-            {
-                OutCard(card);
-                return;
-            }
-        }
-        
-        if (setCards.Count >= 3)
-        {
-            Debug.Log("使用カードは３枚までです。");
-            return;
-        }
-        
-        Debug.Log($"セットしました。{card}");
-        setCards.Add(card);
-    }
     
     //使用予定カードから抜く
     private void OutCard(CardBase card)
@@ -297,6 +352,19 @@ public class CardPlayPresenter : MonoBehaviour
         
         cardPlayView.ConfigCard(model.CurrentHoldCard.Value);
     }
+
+    public void AddTopicCard(CardScriptableObject cardDate)
+    {
+        var card = cardFactory.CreateCard(cardDate, chooseTopicView.TopicCardParent.transform);
+        model.AddTopic(card);
+
+        var topicCards = model.CurrentHoldTopicCard?.Value;
+        if (topicCards != null)
+        {
+            chooseTopicView.ConfigCard(topicCards);
+        }
+    }
+
     
     //カード削除
     public void RemoveCard(CardBase cardDate)
@@ -314,15 +382,7 @@ public class CardPlayPresenter : MonoBehaviour
     {
         return cards[Random.Range(0, cards.Count)];
     }
-
-    //手札総入れ替え
-    public void HandSwap()
-    {
-        for (int i = 0; i > model.CurrentHoldCard.Value.Count; i++)
-        {
-            AddCard(SelectRandomCard(CardPool.Instance.cardpool));
-        }
-    }
+    
 
     //選択したカードタイプを選択
     public List<CardScriptableObject> CollectTargetCardType(List<CardScriptableObject.cardTypes> cardType)
@@ -358,30 +418,6 @@ public class CardPlayPresenter : MonoBehaviour
         return targetCardList;
     }
     
-
-    //アクションポイントを増加
-    public void AddActionPoint(int actionPoint)
-    {
-        model.AddActionPoint(actionPoint);
-    }
-    
-    //デートモードに以降
-    public void GoToDate()
-    {
-        IsDate.Value = true;
-    }
-
-    public void FinishDate()
-    {
-        IsDate.Value = false;
-    }
-    
-    //告白成功
-    public void BeCouple()
-    {
-        isCouple.Value = true;
-    }
-    
     //ゲーム開始時のドロー
     public void StartDrawCards(List<CardScriptableObject.cardTypes> cardData,int drawCount)
     {
@@ -390,5 +426,12 @@ public class CardPlayPresenter : MonoBehaviour
             AddCard(SelectRandomCard(CollectTargetCardType(cardData)));
         }
     }
-    
+
+    public void DrawTopicCards(List<CardScriptableObject.cardTypes> cardData, int drawCount)
+    {
+        for (int i = 0; i < drawCount; i++)
+        {
+            AddTopicCard(SelectRandomCard(CollectTargetCardType(cardData)));
+        }
+    }
 }

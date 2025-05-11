@@ -42,13 +42,13 @@ namespace Ingame
             model.CurrentIngameState.Subscribe(x => InGameManager.Instance.ChangeState(x))
                 .AddTo(this);
             
-            inGameView.TurnEndButton.OnClickAsObservable()
+            /*inGameView.TurnEndButton.OnClickAsObservable()
                 .Where(_=>InGameManager.Instance.CurrentState.Value == InGameEnum.GameState.PlayerTurn)
                 .Subscribe(_ =>
                 {
                     //会話終了
                 })
-                .AddTo(this);
+                .AddTo(this);*/
             
             inGameView.TalkButton.OnClickAsObservable()
                 .Where(_=>InGameManager.Instance.CurrentState.Value == InGameEnum.GameState.PlayerTurn)
@@ -56,14 +56,6 @@ namespace Ingame
                 .AddTo(this);
             
             InGameManager.Instance.CurrentTurn.Subscribe(x=>inGameView.SetCurrentTurn(x))
-                .AddTo(this);
-            
-            //話題選択画面表示
-            InGameManager.Instance.CurrentState.Where(x => x == InGameEnum.GameState.ChooseTopic)
-                .Subscribe(_ =>
-                {
-                    chooseTopicView.Show();
-                })
                 .AddTo(this);
             
             //話題選択ボタン
