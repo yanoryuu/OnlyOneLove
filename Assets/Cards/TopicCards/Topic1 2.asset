@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Topic1 2
   m_EditorClassIdentifier: 
   additionalEffect: []
-  cardName: 
+  cardName: a
   playActionPoints: 1
   useRequirmentPlayerParameter: 0
   requirmentPlayerParameter:
