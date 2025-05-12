@@ -15,18 +15,19 @@ namespace Ingame
         //話題選択のビュー
         [SerializeField] private ChooseTopicView chooseTopicView;
         
+        //AIの返信のビュー
+        [SerializeField] private TalkView talkView;
+        
         //カードをプレイするビュー
         [SerializeField] private CardPlayView cardPlayView;
         
+        //カードプレイのプレゼンター
         [SerializeField]
         private CardPlayPresenter cardPlayPresenter;
         
+        //女の子のプレゼンター
         [SerializeField]
         private AngelPresenter angelPresenter;
-        
-        //女の子の返答画面
-        [SerializeField]
-        private AngelTalkView angelTalkView;
 
         private void Start()
         {
@@ -52,7 +53,15 @@ namespace Ingame
             
             inGameView.TalkButton.OnClickAsObservable()
                 .Where(_=>InGameManager.Instance.CurrentState.Value == InGameEnum.GameState.PlayerTurn)
-                .Subscribe(_=>ChangeState(InGameEnum.GameState.CardEffect))
+                .Subscribe(_=>
+                {
+                    if (cardPlayPresenter.Model.TalkTopic.Value == null)
+                    {
+                        Debug.LogWarning("トピックカードが選ばれていません。");
+                        return;
+                    }
+                    ChangeState(InGameEnum.GameState.CardEffect);
+                })
                 .AddTo(this);
             
             InGameManager.Instance.CurrentTurn.Subscribe(x=>inGameView.SetCurrentTurn(x))
@@ -66,6 +75,15 @@ namespace Ingame
                     ChangeState(InGameEnum.GameState.PlayerTurn);
                 })
                 .AddTo(this);
+            
+            //AIの返答を終了
+            talkView.NextDialogueButton.OnClickAsObservable()
+                .Subscribe(_ =>
+                {
+                    talkView.Initialize();
+                    ChangeState(InGameEnum.GameState.CheckStatus);
+                })
+                .AddTo(this);
         }
 
         private void ChangeState(InGameEnum.GameState state)
@@ -76,14 +94,14 @@ namespace Ingame
                 case InGameEnum.GameState.ChooseTopic:
                     Debug.Log("State: ChooseTopic");
                     chooseTopicView.Show();
-                    angelTalkView.Hide();
+                    talkView.Hide();
                     cardPlayView.Hide();
                     inGameView.Hide();
                     break;
                 
                 case InGameEnum.GameState.PlayerTurn:
                     chooseTopicView.Hide();
-                    angelTalkView.Hide();
+                    talkView.Hide();
                     inGameView.Hide();
                     cardPlayView.Show();
                     Debug.Log("State: PlayerTurn");
@@ -93,26 +111,24 @@ namespace Ingame
                 case InGameEnum.GameState.CardEffect:
                     Debug.Log("State: CardEffect");
                     chooseTopicView.Hide();
-                    angelTalkView.Hide();
+                    talkView.Hide();
                     inGameView.Hide();
                     cardPlayView.Hide();
                     // カード効果の実行処理
                     ChangeState(InGameEnum.GameState.Talk);
                     break;
-                
                 case InGameEnum.GameState.Talk:
                     Debug.Log("State: Talk");
                     chooseTopicView.Hide();
-                    angelTalkView.Show();
+                    talkView.Show();
                     inGameView.Hide();
                     cardPlayView.Hide();
-                    ChangeState(InGameEnum.GameState.CheckStatus);
                     // 会話演出や分岐表示
                     break;
                 case InGameEnum.GameState.CheckStatus:
                     Debug.Log("State: CheckStatus");
                     chooseTopicView.Hide();
-                    angelTalkView.Hide();
+                    talkView.Hide();
                     inGameView.Hide();
                     cardPlayView.Hide();
                     // 好感度、SPなどの状態更新
@@ -121,7 +137,7 @@ namespace Ingame
                 case InGameEnum.GameState.FinishTurn:
                     Debug.Log("State: FinishTurn");
                     chooseTopicView.Hide();
-                    angelTalkView.Hide();
+                    talkView.Hide();
                     inGameView.Hide();
                     cardPlayView.Hide();
                     //ターンを進める
@@ -133,7 +149,7 @@ namespace Ingame
                 case InGameEnum.GameState.Confession:
                     Debug.Log("State: Confession");
                     chooseTopicView.Hide();
-                    angelTalkView.Hide();
+                    talkView.Hide();
                     inGameView.Hide();
                     cardPlayView.Hide();
                     // 告白フェーズ（選択肢や演出）UniTaskで告白フェーズが終われば

@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 073f97970fd04bfaacdc7550589b1837, type: 3}
+  m_Name: Font Fallback Settings Runtime
+  m_EditorClassIdentifier: 
+  fontSettings: {fileID: 11400000, guid: d5b0275d50c584d8b89bd788d7e2af81, type: 2}
+  font: {fileID: 11400000, guid: a75f906f0e64d4e52a40fab730a0c68a, type: 2}
+  fallbackFontsPath: Fonts & Materials
+  localizeFallbacks:
+  - language: English
+    fallbackNames:
+    - AngelTalkNotoSansJP0 SDF
+  - language: Japanese
+    fallbackNames:
+    - AngelTalkNotoSansJP0 SDF
+  - language: Korean
+    fallbackNames:
+    - AngelTalkNotoSansKR0 SDF
+  - language: ChineseSimplified
+    fallbackNames:
+    - AngelTalkNotoSansSC0 SDF
+  - language: ChineseTraditional
+    fallbackNames:
+    - AngelTalkNotoSansTC0 SDF

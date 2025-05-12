@@ -15,14 +15,14 @@ public class CardPlayPresenter : MonoBehaviour
     
     [SerializeField] private ChooseTopicView chooseTopicView;
     
-    [SerializeField] private AngelTalkView angelTalkView;
-    
     [SerializeField] private CardFactory cardFactory;
     
     [SerializeField] private AngelPresenter angelPresenter;
     
     [SerializeField] private LocalAIClient localAIClient;
     public AngelPresenter AngelPresenter => angelPresenter;
+    
+    [SerializeField] private TalkPresenter talkPresenter;
 
     //現在選択中のカード
     private CardBase currentSelectedCard;
@@ -254,15 +254,18 @@ public class CardPlayPresenter : MonoBehaviour
     {
         try
         {
-            // 1. レスポンスをパース
+            // ① JSONパース
             AIResponseData data = JsonUtility.FromJson<AIResponseData>(responseJson);
-            // data.reply         : AI のテキスト返答
-            // data.deltaParameter: AI が提案するパラメーター変更値（デルタ）
+            if (data == null)
+            {
+                Debug.LogError("AIレスポンスのパースに失敗しました。");
+                return;
+            }
 
-            // 2. 会話前の現在パラメーターを取得
+            // ② 現在のパラメーター取得
             AngelParameter before = angelPresenter.GetAngelParameter();
 
-            // 3. カードごとの倍率を掛け合わせ
+            // ③ 各カードの倍率を合算
             float affMul = 1f, trustMul = 1f, jealMul = 1f, closeMul = 1f;
             foreach (var card in oneTurnUsedCards)
             {
@@ -272,12 +275,12 @@ public class CardPlayPresenter : MonoBehaviour
                 closeMul *= card.CardData.closenessMultiplier;
             }
 
-            // 4. AI のデルタに倍率を適用
+            // ④ AIからの提案値に倍率を掛けた調整
             AngelParameter adjustedDelta = data.deltaParameter.Multiply(
                 affMul, trustMul, jealMul, closeMul
             );
 
-            // 5. 新しいパラメーターを計算（現在値 + 調整済デルタ）
+            // ⑤ 新しいパラメーターの計算
             AngelParameter after = new AngelParameter
             {
                 affection = before.affection + adjustedDelta.affection,
@@ -286,22 +289,35 @@ public class CardPlayPresenter : MonoBehaviour
                 closeness = before.closeness + adjustedDelta.closeness
             };
 
-            // 6. モデルを更新
+            // ⑥ モデル更新
             angelPresenter.UpdateAngel(after);
 
-            // 7. UI に AI の返答を表示
-            angelTalkView.ShowAITalk(data.reply);
+            // ⑦ AI返答の表示（Utage未使用時）
+            if (talkPresenter != null)
+                talkPresenter.ReceiveTalk(data.reply); // 将来 Utage 対応
 
-            // 8. ターン終了後のクリア
+            // ⑧ セットカードクリア
             setCards.Clear();
             oneTurnUsedCards.Clear();
         }
         catch (Exception ex)
         {
-            Debug.LogError($"OnAIResponse 処理中にエラー: {ex}");
+            Debug.LogError($"[OnAIResponse] 例外発生: {ex}");
         }
     }
 
+    // AI返答を構造に分解して保持するクラスを追加
+    public class AIResponseHandler
+    {
+        public string TextResponse;
+        public AngelParameter AdjustedDelta;
+
+        public AIResponseHandler(string text, AngelParameter delta)
+        {
+            TextResponse = text;
+            AdjustedDelta = delta;
+        }
+    }
     
     //会話内容とカード内容の送信
     private void SendToAITalk(string Json)

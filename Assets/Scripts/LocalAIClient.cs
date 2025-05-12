@@ -60,5 +60,6 @@ public class LocalAIClient : MonoBehaviour
             onResponse?.Invoke(result.response); // or result.text etc.
         }
     }
+    
 }
 
