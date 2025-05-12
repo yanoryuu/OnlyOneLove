@@ -72,7 +72,7 @@ public class CardPlayPresenter : MonoBehaviour
             .Subscribe(cardData =>
             {
                 cardData.cardButton.OnClickAsObservable()
-                    .Where(_ => InGameManager.Instance.CurrentState.Value == InGameEnum.GameState.PlayerTurn || InGameManager.Instance.CurrentState.Value == InGameEnum.GameState.ChooseTopic)
+                    .Where(_ => InGameManager.Instance.CurrentState.Value == InGameEnum.GameState.PlayerTurn)
                     .Subscribe(x =>
                     {
                         Debug.Log($"Select {x.ToString()}");
@@ -90,7 +90,7 @@ public class CardPlayPresenter : MonoBehaviour
             .Subscribe(cardData =>
             {
                 cardData.cardButton.OnClickAsObservable()
-                    .Where(_ => InGameManager.Instance.CurrentState.Value == InGameEnum.GameState.PlayerTurn || InGameManager.Instance.CurrentState.Value == InGameEnum.GameState.ChooseTopic)
+                    .Where(_ =>InGameManager.Instance.CurrentState.Value == InGameEnum.GameState.ChooseTopic)
                     .Subscribe(x =>
                     {
                         Debug.Log($"Select {x.ToString()}");
@@ -145,11 +145,6 @@ public class CardPlayPresenter : MonoBehaviour
                 currentSelectedCard = null;
             })
             .AddTo(this);
-        
-        chooseTopicView.SetTopicButton.OnClickAsObservable()
-            .Where(_=>model.TalkTopic!=null)
-            .Subscribe(_ => model.SetTalkTopic(currentSelectedCard))
-            .AddTo(this);
     }
     
     public void OnCardClicked(CardBase card)
@@ -183,7 +178,8 @@ public class CardPlayPresenter : MonoBehaviour
 
     public void OnTopicCardClicked(CardBase card)
     {
-        if (model.TalkTopic == null)
+        Debug.Log(model.TalkTopic.Value);
+        if (model.TalkTopic.Value == null)
         {
             model.SetTalkTopic(card);
             card.transform.SetParent(chooseTopicView.SetTopicCardParent.transform);

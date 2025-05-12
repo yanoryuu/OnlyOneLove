@@ -60,7 +60,7 @@ namespace Ingame
             
             //話題選択ボタン
             chooseTopicView.SetTopicButton.OnClickAsObservable()
-                .Where(x=>cardPlayPresenter.Model.TalkTopic.Value!=null)
+                .Where(x=> cardPlayPresenter.Model.TalkTopic.Value!=null)
                 .Subscribe(_ =>
                 {
                     ChangeState(InGameEnum.GameState.PlayerTurn);
