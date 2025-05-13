@@ -84,6 +84,14 @@ namespace Ingame
                     ChangeState(InGameEnum.GameState.CheckStatus);
                 })
                 .AddTo(this);
+            
+            //会話選択肢のボタン
+            foreach (var button in cardPlayView.TalkOptionButtons)
+            {
+                button.OnClickAsObservable()
+                    .Subscribe(_=>ChangeState(InGameEnum.GameState.CardEffect))
+                    .AddTo(this);
+            }
         }
 
         private void ChangeState(InGameEnum.GameState state)
