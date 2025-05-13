@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using CardGame;
 using NUnit.Framework;
 using UnityEngine;
@@ -8,20 +9,27 @@ using Random = UnityEngine.Random;
 
 public class CardPlayPresenter : MonoBehaviour
 {
+    //モデル
     private CardPlayModel model;
     public CardPlayModel Model => model;
     
+    //カードと会話のビュー
     [SerializeField] private CardPlayView cardPlayView;
     
+    //話題選択のビュー
     [SerializeField] private ChooseTopicView chooseTopicView;
     
+    //カードのファクトリー
     [SerializeField] private CardFactory cardFactory;
     
+    //女の子のプレゼンター
     [SerializeField] private AngelPresenter angelPresenter;
-    
-    [SerializeField] private LocalAIClient localAIClient;
     public AngelPresenter AngelPresenter => angelPresenter;
     
+    //AI
+    [SerializeField] private LocalAIClient localAIClient;
+    
+    //会話のプレゼンター
     [SerializeField] private TalkPresenter talkPresenter;
 
     //現在選択中のカード
@@ -31,6 +39,7 @@ public class CardPlayPresenter : MonoBehaviour
     private List<CardBase> setCards = new List<CardBase>();
     public List<CardBase> SetCards => setCards;
 
+    //処理中のフラグ
     private ReactiveProperty<bool> isProcessing;
     
     //デート中（デート中は告白成功率アップ）
@@ -50,6 +59,7 @@ public class CardPlayPresenter : MonoBehaviour
     
     [SerializeField] private int startGetTopicCardNum = 2;
     
+    //１ターン間に使われたカード
     private List<CardBase> oneTurnUsedCards = new List<CardBase>();
 
     private void Start()
@@ -86,6 +96,7 @@ public class CardPlayPresenter : MonoBehaviour
             })
             .AddTo(this);
         
+        //会話カードが追加された時
         model.OnAddTopicCard
             .Subscribe(cardData =>
             {
@@ -136,24 +147,63 @@ public class CardPlayPresenter : MonoBehaviour
             })
             .AddTo(this);
 
-        
+        //プレイヤーのターンになったら初期化
         InGameManager.Instance.CurrentState.Where(x => x == InGameEnum.GameState.PlayerTurn)
             .Subscribe(_=>
             {
                 model.Initialize();
+                cardPlayView.Initialize();
                 //選択中のカードを初期化
                 currentSelectedCard = null;
             })
             .AddTo(this);
+        
+        //プレイヤーが選択した選択肢を送信
+        for (int i = 0; i < cardPlayView.TalkOptionButtons.Count; i++)
+        {
+            int index = i;
+            cardPlayView.TalkOptionButtons[index].OnClickAsObservable()
+                .Where(_ => InGameManager.Instance.CurrentState.Value == InGameEnum.GameState.PlayerTurn)
+                .Subscribe(_ =>
+                {
+                    // a. 現在パラを取得
+                    AngelParameter before = angelPresenter.GetAngelParameter();
+
+                    // b. カード効果を適用しつつデルタも集める
+                    AngelParameter tmp = new AngelParameter();
+                    List<CardEffectEntry> cardDeltas = new List<CardEffectEntry>();
+                    foreach (var card in SetCards)
+                    {
+                        tmp = card.PlayCard(this, tmp);
+                        cardDeltas.Add(card.GetEffectForAI());
+                        oneTurnUsedCards.Add(card);
+                        RemoveCard(card);
+                    }
+
+                    // c. JSONを組み立てて送信
+                    string json = AIPromptBuilder.BuildPromptJson(
+                        cardPlayView.TalkOptionTexts[index].text,
+                        before,
+                        cardDeltas
+                    );
+                    SendToAITalk(json);
+
+                    // 後片付け
+                    setCards.Clear();
+                    oneTurnUsedCards.Clear();
+                })
+                .AddTo(cardPlayView);
+        }
     }
     
+    // カードがクリックされた時
     public void OnCardClicked(CardBase card)
     {
         if (SetCards.Contains(card))
         {
             // 再クリックで外す
             SetCards.Remove(card);
-            card.transform.SetParent(cardPlayView.CardParent); // 元の親に戻す
+            card.transform.SetParent(cardPlayView.CardParent);
             card.transform.localPosition = Vector3.zero;
             Debug.Log("カードをセットから外しました");
         }
@@ -166,14 +216,27 @@ public class CardPlayPresenter : MonoBehaviour
             }
 
             SetCards.Add(card);
-            card.transform.SetParent(cardPlayView.SetCardArea); // セット枠のUIに移動
+            card.transform.SetParent(cardPlayView.SetCardArea);
             card.transform.localPosition = Vector3.zero;
             Debug.Log("カードをセットしました");
         }
 
+        // 発言カードが含まれているかを判定
+        bool hasCommentCard = SetCards.Any(c => c.CardData.cardType == CardScriptableObject.cardTypes.Comment);
+
+        if (hasCommentCard)
+        {
+            cardPlayView.HideTalkOption();
+            
+        }
+        else
+        {
+            cardPlayView.ShowTalkOption();
+        }
+
         // 表示更新
         cardPlayView.ConfigCard(model.CurrentHoldCard.Value);
-        cardPlayView.ConfigSetCard(setCards);
+        cardPlayView.ConfigSetCard(SetCards);
     }
 
     public void OnTopicCardClicked(CardBase card)
@@ -187,7 +250,6 @@ public class CardPlayPresenter : MonoBehaviour
             chooseTopicView.SetTopicCard(card);
             
             Debug.Log("会話カードをセット");
-            
         }else if (model.TalkTopic.Value == card)
         {
             var lastTopic = model.ResetTalkTopic();
@@ -345,13 +407,6 @@ public class CardPlayPresenter : MonoBehaviour
         // JSON形式にして再利用（本来のAI応答と同じ処理で動くように）
         string fakeJson = JsonUtility.ToJson(dummyResponse);
         OnAIResponse(fakeJson);
-    }
-    
-    //使用予定カードから抜く
-    private void OutCard(CardBase card)
-    {
-        Debug.Log($"抜きました{card}");
-        setCards.Remove(card);
     }
 
     //カード追加時の演出
