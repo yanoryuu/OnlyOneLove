@@ -5,17 +5,24 @@ using TMPro;
 
 public class CardPlayView : MonoBehaviour
 {
-    [SerializeField] private GameObject objCardPlayView;
-    public GameObject ObjCardPlayView => objCardPlayView;
+    [SerializeField] private GameObject objCardPlayParent;
     
     [SerializeField] private GameObject cardParent;
     public Transform CardParent => cardParent.transform;
 
     [SerializeField] private GameObject playerInput;
-    public GameObject PlayerInput => playerInput;
     
     [SerializeField] private Button talkButton;
     public Button TalkButton => talkButton;
+    
+    //会話の選択肢
+    [SerializeField] private GameObject talkOptionParent;
+    
+    [SerializeField] private List<TextMeshProUGUI> talkOptionTexts;
+    public List<TextMeshProUGUI> TalkOptionTexts => talkOptionTexts;
+    
+    [SerializeField] private List<Button> talkOptionButton;
+    public List<Button> TalkOptionButtons => talkOptionButton;
 
     //カードの間隔
     [SerializeField] private float spacing = 150f;
@@ -33,6 +40,7 @@ public class CardPlayView : MonoBehaviour
     public void AddCard(CardBase card)
     {
         card.ShowCard();
+        card.GetComponent<Image>().sprite = card.CardData.cardSprite;
     }
 
     //カードをプレイするときの演出はここに
@@ -80,11 +88,29 @@ public class CardPlayView : MonoBehaviour
     
     public void Show()
     {
-        objCardPlayView.SetActive(true);
+        objCardPlayParent.SetActive(true);
     }
     
     public void Hide()
     {
-        objCardPlayView.SetActive(false);
+        objCardPlayParent.SetActive(false);
+    }
+
+    public void ShowTalkOption()
+    {
+        talkOptionParent.SetActive(true);
+        playerInput.SetActive(false);
+    }
+
+    public void HideTalkOption()
+    {
+        talkOptionParent.SetActive(false);
+        playerInput.SetActive(true);
+    }
+
+    //ターンが始まった時に初期化
+    public void Initialize()
+    {
+        ShowTalkOption();
     }
 }
