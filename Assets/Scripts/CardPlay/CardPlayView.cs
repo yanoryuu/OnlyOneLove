@@ -40,7 +40,6 @@ public class CardPlayView : MonoBehaviour
     public void AddCard(CardBase card)
     {
         card.ShowCard();
-        card.GetComponent<Image>().sprite = card.CardData.cardSprite;
     }
 
     //カードをプレイするときの演出はここに

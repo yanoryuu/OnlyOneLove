@@ -31,7 +31,6 @@ public class ChooseTopicView : MonoBehaviour
     public void AddTopicCard(CardBase card)
     {
         card.ShowCard();
-        card.GetComponent<Image>().sprite = card.CardData.cardSprite;
     }
     
     //トピックカードをセットしたときの演出
