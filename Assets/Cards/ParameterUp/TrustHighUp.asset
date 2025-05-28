@@ -22,7 +22,7 @@ MonoBehaviour:
     Strength: 0
     ActionPoint: 0
   cardType: 3
-  cardSprite: {fileID: -4597674933089008130, guid: eb53b3f700c2cb747b6bbac01de24ff3, type: 3}
+  cardSprite: {fileID: -5167449562435917943, guid: 7c9a7e26be9c91c42acb5e5ffe84fe89, type: 3}
   affectionUpNum: 1
   keepTurns: 1
   searchCardType: 

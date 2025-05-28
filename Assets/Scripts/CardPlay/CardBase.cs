@@ -23,6 +23,7 @@ public abstract class CardBase : MonoBehaviour
         // 見た目を設定
         if (_cardImage != null && _cardData.cardSprite != null)
         {
+            _cardImage.enabled = true;
             _cardImage.sprite = _cardData.cardSprite;
         }
     }

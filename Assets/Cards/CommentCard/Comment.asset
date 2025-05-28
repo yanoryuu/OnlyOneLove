@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Comment
   m_EditorClassIdentifier: 
   additionalEffect: []
-  cardName: 
+  cardName: "\u767A\u8A00\u30AB\u30FC\u30C9"
   playActionPoints: 1
   useRequirmentPlayerParameter: 0
   requirmentPlayerParameter:
@@ -22,7 +22,7 @@ MonoBehaviour:
     Strength: 0
     ActionPoint: 0
   cardType: 1
-  cardSprite: {fileID: -4597674933089008130, guid: eb53b3f700c2cb747b6bbac01de24ff3, type: 3}
+  cardSprite: {fileID: 5291023174591347779, guid: 5580451de3d00e345b81633d1f950731, type: 3}
   affectionUpNum: 0
   keepTurns: 1
   searchCardType: 

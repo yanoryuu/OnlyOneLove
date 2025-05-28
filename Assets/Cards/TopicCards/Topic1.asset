@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Topic1
   m_EditorClassIdentifier: 
   additionalEffect: []
-  cardName: a
+  cardName: "\u6614\u8A71"
   playActionPoints: 1
   useRequirmentPlayerParameter: 0
   requirmentPlayerParameter:
@@ -22,7 +22,7 @@ MonoBehaviour:
     Strength: 0
     ActionPoint: 0
   cardType: 0
-  cardSprite: {fileID: -4597674933089008130, guid: eb53b3f700c2cb747b6bbac01de24ff3, type: 3}
+  cardSprite: {fileID: -5281302935968706859, guid: 6129885b934bbf845ac7f8c75d1c44a5, type: 3}
   affectionUpNum: 0
   keepTurns: 1
   searchCardType: 
